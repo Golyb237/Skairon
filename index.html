@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Skairon Chat</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #a9a9a9; /* Более серый фон */
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+        #greeting {
+            font-size: 36px;
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        #subtext {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+        #input-container {
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+        #input {
+            width: 300px;
+            padding: 10px;
+            font-size: 16px;
+            background-color: #b0b0b0; /* Более серый InputField */
+            border: none;
+            border-radius: 5px 0 0 5px;
+            outline: none;
+            box-shadow: none;
+            -webkit-appearance: none; /* Убираем странные стили браузера */
+        }
+        #input::placeholder {
+            color: #666;
+        }
+        #send-btn {
+            background-color: #00b7ff; /* Голубая круглая кнопка */
+            border: none;
+            padding: 10px;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            border-radius: 50%; /* Круглая форма */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #send-btn:hover {
+            background-color: #0099cc;
+        }
+        #chat {
+            width: 400px;
+            max-height: 70vh;
+            overflow-y: auto;
+            background-color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            display: none; /* Скрыт изначально */
+        }
+    </style>
+</head>
+<body>
+    <div id="greeting">Привет! Я Skairon</div>
+    <div id="subtext">Чем могу быть полезен?</div>
+    <div id="input-container">
+        <input type="text" id="input" placeholder="Напишите запрос в Skairon" autocomplete="off" autocorrect="off" spellcheck="false">
+        <button id="send-btn" onclick="sendMessage()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
+                <path d="M12 19V5M5 12l7-7 7 7"/>
+            </svg>
+        </button>
+    </div>
+    <div id="chat"></div>
+
+    <script>
+        let isFirstMessage = true;
+
+        async function sendMessage() {
+            const input = document.getElementById('input');
+            const message = input.value.trim();
+            if (!message) return;
+
+            // Показываем чат и убираем приветствие
+            const chat = document.getElementById('chat');
+            const greeting = document.getElementById('greeting');
+            const subtext = document.getElementById('subtext');
+            const inputContainer = document.getElementById('input-container');
+
+            if (isFirstMessage) {
+                greeting.style.display = 'none';
+                subtext.style.display = 'none';
+                chat.style.display = 'block';
+                document.body.style.justifyContent = 'flex-start';
+                document.body.style.paddingTop = '20px';
+                inputContainer.style.position = 'fixed';
+                inputContainer.style.bottom = '20px';
+                isFirstMessage = false;
+            }
+
+            // Показываем сообщение пользователя
+            chat.innerHTML += `<p><b>Ты:</b> ${message}</p>`;
+            input.value = '';
+
+            // Отправляем запрос на сервер
+            const response = await fetch('http://localhost:8000/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: message })
+            });
+            const data = await response.json();
+
+            // Показываем ответ Skairon
+            chat.innerHTML += `<p><b>Skairon:</b> ${data.reply}</p>`;
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        // Отправка по Enter
+        document.getElementById('input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+    </script>
+</body>
+</html>
