@@ -6,7 +6,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #a9a9a9; /* Более серый фон */
+            background-color: #a9a9a9;
             margin: 0;
             height: 100vh;
             display: flex;
@@ -35,24 +35,24 @@
             width: 300px;
             padding: 10px;
             font-size: 16px;
-            background-color: #b0b0b0; /* Более серый InputField */
+            background-color: #b0b0b0;
             border: none;
             border-radius: 5px 0 0 5px;
             outline: none;
             box-shadow: none;
-            -webkit-appearance: none; /* Убираем странные стили браузера */
+            -webkit-appearance: none;
         }
         #input::placeholder {
             color: #666;
         }
         #send-btn {
-            background-color: #00b7ff; /* Голубая круглая кнопка */
+            background-color: #00b7ff;
             border: none;
             padding: 10px;
             width: 40px;
             height: 40px;
             cursor: pointer;
-            border-radius: 50%; /* Круглая форма */
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -69,7 +69,46 @@
             border-radius: 5px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             margin-bottom: 20px;
-            display: none; /* Скрыт изначально */
+            display: none;
+        }
+        #model-btn {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background-color: #b0b0b0;
+            color: #333;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        #model-btn:hover {
+            background-color: #999;
+        }
+        #model-menu {
+            display: none;
+            position: fixed;
+            top: 40px;
+            right: 10px;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            width: 200px;
+        }
+        #model-menu h3 {
+            margin: 0 0 10px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .model-option {
+            padding: 5px;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+        .model-option:hover {
+            background-color: #f0f0f0;
         }
     </style>
 </head>
@@ -85,16 +124,21 @@
         </button>
     </div>
     <div id="chat"></div>
+    <button id="model-btn" onclick="toggleModelMenu()">Модели: G1-mini-Exp</button>
+    <div id="model-menu">
+        <h3>Модели</h3>
+        <div class="model-option" onclick="selectModel('G1-mini-Exp')">Skairon G1-mini-Experimental</div>
+    </div>
 
     <script>
         let isFirstMessage = true;
+        let currentModel = "G1-mini-Exp";
 
         async function sendMessage() {
             const input = document.getElementById('input');
             const message = input.value.trim();
             if (!message) return;
 
-            // Показываем чат и убираем приветствие
             const chat = document.getElementById('chat');
             const greeting = document.getElementById('greeting');
             const subtext = document.getElementById('subtext');
@@ -111,27 +155,34 @@
                 isFirstMessage = false;
             }
 
-            // Показываем сообщение пользователя
             chat.innerHTML += `<p><b>Ты:</b> ${message}</p>`;
             input.value = '';
 
-            // Отправляем запрос на сервер
-            const response = await fetch('http://localhost:8000/chat', {
+            const response = await fetch('/chat', {  // Изменил на относительный путь для Vercel
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: message })
+                body: JSON.stringify({ message: message, model: currentModel })
             });
             const data = await response.json();
 
-            // Показываем ответ Skairon
             chat.innerHTML += `<p><b>Skairon:</b> ${data.reply}</p>`;
             chat.scrollTop = chat.scrollHeight;
         }
 
-        // Отправка по Enter
         document.getElementById('input').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') sendMessage();
         });
+
+        function toggleModelMenu() {
+            const menu = document.getElementById('model-menu');
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function selectModel(model) {
+            currentModel = model;
+            document.getElementById('model-btn').innerText = `Модели: ${model}`;
+            toggleModelMenu();
+        }
     </script>
 </body>
 </html>
