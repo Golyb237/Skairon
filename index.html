@@ -2,11 +2,11 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Skairon Chat</title>
+    <title>Skairon</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #a9a9a9;
+            background-color: #666;
             margin: 0;
             height: 100vh;
             display: flex;
@@ -23,19 +23,20 @@
         }
         #subtext {
             font-size: 14px;
-            color: #666;
+            color: #999;
             margin-bottom: 20px;
         }
         #input-container {
             display: flex;
             align-items: center;
             position: relative;
+            z-index: 1;
         }
         #input {
             width: 300px;
             padding: 10px;
             font-size: 16px;
-            background-color: #b0b0b0;
+            background-color: #808080;
             border: none;
             border-radius: 5px 0 0 5px;
             outline: none;
@@ -43,7 +44,7 @@
             -webkit-appearance: none;
         }
         #input::placeholder {
-            color: #666;
+            color: #999;
         }
         #send-btn {
             background-color: #00b7ff;
@@ -56,26 +57,35 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: background-color 0.3s ease;
         }
         #send-btn:hover {
-            background-color: #0099cc;
+            background-color: #d3d3d3;
+        }
+        #send-btn:hover svg {
+            stroke: #00b7ff;
         }
         #chat {
             width: 400px;
             max-height: 70vh;
             overflow-y: auto;
-            background-color: #fff;
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 60px;
+        }
+        .message {
+            background-color: #777;
             padding: 10px;
             border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-            display: none;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            color: #ccc;
         }
         #model-btn {
             position: fixed;
             top: 10px;
-            right: 10px;
-            background-color: #b0b0b0;
+            left: 10px;
+            background-color: #808080;
             color: #333;
             padding: 8px 15px;
             border: none;
@@ -84,14 +94,14 @@
             font-size: 14px;
         }
         #model-btn:hover {
-            background-color: #999;
+            background-color: #666;
         }
         #model-menu {
             display: none;
             position: fixed;
             top: 40px;
-            right: 10px;
-            background-color: #fff;
+            left: 10px;
+            background-color: #808080;
             padding: 15px;
             border-radius: 5px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
@@ -101,14 +111,167 @@
             margin: 0 0 10px;
             font-size: 18px;
             font-weight: bold;
+            color: #333;
         }
         .model-option {
             padding: 5px;
             cursor: pointer;
             border-radius: 3px;
+            color: #333;
         }
         .model-option:hover {
-            background-color: #f0f0f0;
+            background-color: #666;
+        }
+        #warning {
+            font-size: 12px;
+            color: #999;
+            position: fixed;
+            bottom: 5px;
+            z-index: 1;
+        }
+        #menu-btn {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background-color: #808080;
+            border: none;
+            padding: 8px 15px;
+            cursor: pointer;
+            font-size: 18px;
+            border-radius: 5px;
+        }
+        #menu-btn:hover {
+            background-color: #666;
+        }
+        #menu-panel {
+            display: none;
+            position: fixed;
+            top: 0;
+            right: 0;
+            background-color: #555;
+            border-radius: 5px 0 0 5px;
+            box-shadow: -2px 0 5px rgba(0,0,0,0.2);
+            width: 400px;
+            height: 100vh;
+            color: #ccc;
+            font-size: 16px;
+            display: flex;
+        }
+        #menu-sidebar {
+            width: 150px;
+            background-color: #666;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        #menu-content {
+            flex: 1;
+            padding: 20px;
+            position: relative;
+        }
+        #settings-panel {
+            display: none;
+        }
+        #details-panel {
+            display: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
+        }
+        .settings-btn {
+            background-color: #808080;
+            color: #333;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            width: 100%;
+            text-align: left;
+        }
+        .settings-btn:hover {
+            background-color: #666;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 20px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #808080;
+            transition: .4s;
+            border-radius: 20px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 2px;
+            bottom: 2px;
+            background-color: #333;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #00b7ff;
+        }
+        input:checked + .slider:before {
+            transform: translateX(20px);
+        }
+        .details-btn {
+            background-color: #808080;
+            color: #333;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+        .details-btn:hover {
+            background-color: #666;
+        }
+        .done-btn {
+            background-color: #808080;
+            color: #333;
+            padding: 10px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            width: 100%;
+            text-align: center;
+        }
+        .done-btn:hover {
+            background-color: #666;
+        }
+        #close-panel-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: #ccc;
+            font-size: 18px;
+            cursor: pointer;
+        }
+        #close-panel-btn:hover {
+            color: #fff;
         }
     </style>
 </head>
@@ -123,16 +286,54 @@
             </svg>
         </button>
     </div>
+    <div id="warning">Skairon может ошибаться, не берите всё всерьёз</div>
     <div id="chat"></div>
     <button id="model-btn" onclick="toggleModelMenu()">Модели: G1-mini-Exp</button>
     <div id="model-menu">
         <h3>Модели</h3>
         <div class="model-option" onclick="selectModel('G1-mini-Exp')">Skairon G1-mini-Experimental</div>
     </div>
+    <button id="menu-btn" onclick="toggleMenu()">☰</button>
+    <div id="menu-panel">
+        <div id="menu-sidebar">
+            <button class="settings-btn" onclick="openSettings()">Настройки</button>
+        </div>
+        <div id="menu-content">
+            <button id="close-panel-btn" onclick="closeMenu()">✖</button>
+            <div id="settings-panel">
+                <h3>Настройки</h3>
+                <div style="margin-bottom: 20px;">
+                    <span>Сбор данных</span>
+                    <label class="switch">
+                        <input type="checkbox" id="data-collection" onchange="toggleDataCollection()" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <button class="details-btn" onclick="openDetails()">Подробнее</button>
+            </div>
+            <div id="details-panel">
+                <div>
+                    <h3>О сборе данных</h3>
+                    <p>Мы собираем ваши диалоги, чтобы улучшать наши модели ИИ. Если вы не хотите, чтобы ваши сообщения использовались для обучения, пожалуйста, отключите опцию сбора данных в настройках.</p>
+                </div>
+                <button class="done-btn" onclick="closeDetails()">Готово</button>
+            </div>
+        </div>
+    </div>
 
     <script>
         let isFirstMessage = true;
         let currentModel = "G1-mini-Exp";
+        let dataCollectionEnabled = true; // Сбор данных включён по умолчанию
+
+        // При загрузке страницы скрываем все панели
+        window.onload = function() {
+            document.getElementById('menu-panel').style.display = 'none';
+            document.getElementById('settings-panel').style.display = 'none';
+            document.getElementById('details-panel').style.display = 'none';
+            document.getElementById('model-menu').style.display = 'none';
+            document.getElementById('chat').style.display = 'none';
+        };
 
         async function sendMessage() {
             const input = document.getElementById('input');
@@ -147,25 +348,32 @@
             if (isFirstMessage) {
                 greeting.style.display = 'none';
                 subtext.style.display = 'none';
-                chat.style.display = 'block';
+                chat.style.display = 'flex';
                 document.body.style.justifyContent = 'flex-start';
                 document.body.style.paddingTop = '20px';
                 inputContainer.style.position = 'fixed';
-                inputContainer.style.bottom = '20px';
+                inputContainer.style.bottom = '40px';
                 isFirstMessage = false;
             }
 
-            chat.innerHTML += `<p><b>Ты:</b> ${message}</p>`;
+            const userMessage = document.createElement('div');
+            userMessage.className = 'message';
+            userMessage.innerHTML = `<b>Ты:</b> ${message}`;
+            chat.appendChild(userMessage);
             input.value = '';
 
-            const response = await fetch('/chat', {  // Изменил на относительный путь для Vercel
+            const response = await fetch('/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: message, model: currentModel })
+                body: JSON.stringify({ message: message, model: currentModel, collectData: dataCollectionEnabled })
             });
             const data = await response.json();
 
-            chat.innerHTML += `<p><b>Skairon:</b> ${data.reply}</p>`;
+            const skaironMessage = document.createElement('div');
+            skaironMessage.className = 'message';
+            skaironMessage.innerHTML = `<b>Skairon:</b> ${data.reply}`;
+            chat.appendChild(skaironMessage);
+
             chat.scrollTop = chat.scrollHeight;
         }
 
@@ -175,13 +383,71 @@
 
         function toggleModelMenu() {
             const menu = document.getElementById('model-menu');
+            const menuPanel = document.getElementById('menu-panel');
+            const settingsPanel = document.getElementById('settings-panel');
+            const detailsPanel = document.getElementById('details-panel');
             menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+            menuPanel.style.display = 'none';
+            settingsPanel.style.display = 'none';
+            detailsPanel.style.display = 'none';
         }
 
         function selectModel(model) {
             currentModel = model;
             document.getElementById('model-btn').innerText = `Модели: ${model}`;
             toggleModelMenu();
+        }
+
+        function toggleMenu() {
+            const modelMenu = document.getElementById('model-menu');
+            const menuPanel = document.getElementById('menu-panel');
+            const settingsPanel = document.getElementById('settings-panel');
+            const detailsPanel = document.getElementById('details-panel');
+            modelMenu.style.display = 'none';
+            if (menuPanel.style.display === 'flex') {
+                menuPanel.style.display = 'none';
+                settingsPanel.style.display = 'none';
+                detailsPanel.style.display = 'none';
+            } else {
+                menuPanel.style.display = 'flex';
+                settingsPanel.style.display = 'none'; // Скрываем содержимое при открытии
+                detailsPanel.style.display = 'none';
+            }
+        }
+
+        function closeMenu() {
+            const menuPanel = document.getElementById('menu-panel');
+            const settingsPanel = document.getElementById('settings-panel');
+            const detailsPanel = document.getElementById('details-panel');
+            menuPanel.style.display = 'none';
+            settingsPanel.style.display = 'none';
+            detailsPanel.style.display = 'none';
+        }
+
+        function openSettings() {
+            const settingsPanel = document.getElementById('settings-panel');
+            const detailsPanel = document.getElementById('details-panel');
+            settingsPanel.style.display = 'block';
+            detailsPanel.style.display = 'none';
+        }
+
+        function openDetails() {
+            const settingsPanel = document.getElementById('settings-panel');
+            const detailsPanel = document.getElementById('details-panel');
+            settingsPanel.style.display = 'none';
+            detailsPanel.style.display = 'flex';
+        }
+
+        function closeDetails() {
+            const settingsPanel = document.getElementById('settings-panel');
+            const detailsPanel = document.getElementById('details-panel');
+            settingsPanel.style.display = 'block';
+            detailsPanel.style.display = 'none';
+        }
+
+        function toggleDataCollection() {
+            dataCollectionEnabled = !dataCollectionEnabled;
+            console.log("Сбор данных:", dataCollectionEnabled);
         }
     </script>
 </body>
