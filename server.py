@@ -1,37 +1,22 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
-from pydantic import BaseModel
+import json
 
 app = FastAPI()
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-class Message(BaseModel):
-    message: str
-
-def rule_based_reply(message: str) -> str:
-    message = message.lower().strip()
-    rules = {
-        "привет": "Здравствуй! Чем могу помочь?",
-        "как дела?": "Отлично, а у тебя?",
-        "что умеешь?": "Пока я просто отвечаю по правилам, но скоро стану умнее!",
-        "пока": "До встречи!",
-    }
-    return rules.get(message, "Не знаю, что ответить. Спроси что-нибудь ещё!")
-
-@app.get("/", response_class=HTMLResponse)
-async def serve_html():
-    with open("index.html", "r", encoding="utf-8") as f:
-        return HTMLResponse(content=f.read())
+# Заглушка для модели, потом заменишь на свою
+def get_model_response(message, model):
+    return f"Привет от {model}! Ты сказал: {message}"
 
 @app.post("/chat")
-async def chat(message: Message):
-    reply = rule_based_reply(message.message)
+async def chat(request: Request):
+    data = await request.json()
+    message = data.get("message", "")
+    model = data.get("model", "G1-mini-Exp")  # По умолчанию G1-mini-Exp
+    reply = get_model_response(message, model)
     return {"reply": reply}
+
+@app.get("/", response_class=HTMLResponse)
+async def home():
+    with open("index.html", "r", encoding="utf-8") as f:
+        return f.read()
